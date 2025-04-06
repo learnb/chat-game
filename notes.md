@@ -36,3 +36,15 @@ Run JS using Node
 node dist/index.js
 ```
 
+
+## Spacetime cli sql
+
+Get all entries in Players table:
+```bash
+spacetime sql chat-game-dev 'SELECT * FROM Players'
+```
+
+Delete all entries in Players table:
+```bash
+spacetime sql chat-game-dev 'DELETE FROM Players'
+```
