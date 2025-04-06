@@ -1,0 +1,5 @@
+bin
+obj
+
+tsclient/node_modules/*
+tsclient/src/module_bindings/*
