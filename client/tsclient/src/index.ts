@@ -6,7 +6,7 @@ import { Identity } from "@clockworklabs/spacetimedb-sdk"
 const API_URL = "wss://spacetime.bryanlearn.com";
 const DATABASE_NAME = "chat-game-dev";
 
-
+const gameContainer = document.getElementById('game-container') as HTMLDivElement;
 const messagesDiv = document.getElementById('messages') as HTMLDivElement;
 const playersDiv = document.getElementById('players') as HTMLDivElement;
 const usernameInput = document.getElementById('username') as HTMLInputElement;
@@ -16,7 +16,9 @@ const sendMessageButton = document.getElementById('sendMessage') as HTMLButtonEl
 const disconnectionButton = document.getElementById('disconnect') as HTMLButtonElement;
 
 let playerElements: { [playerId: number]: HTMLDivElement } = {};
+let playerMap: { [username: string]: number} = {};
 
+let isOnline: boolean = false;
 let username: string;
 let conn: DbConnection | null = null;
 
@@ -43,6 +45,7 @@ function onDisconnect() {
     console.log('Disconnected from SpacetimeDB');
     // remove player
     conn?.reducers.removePlayer(username);
+    removePlayer(playerMap[username]);
 }
 
 // Event handler for connection error
@@ -105,26 +108,36 @@ function subscribeToPlayers() {
 
     conn.db.players.onInsert((ctx: EventContext, player: Player) => {
         console.log('Added player:', player);
-        const playerElement = document.createElement('div');
+        let playerElement = document.createElement('div');
+        playerElement.style.position = 'absolute';
+        playerElement.style.width = '10px';
+        playerElement.style.height = '10px';
+        playerElement.style.backgroundColor = 'red';
+        playerElement.style.pointerEvents = 'none';
         playerElement.textContent = player.identity;
-        playersDiv.appendChild(playerElement);
+        gameContainer.appendChild(playerElement);
         playerElements[player.playerId] = playerElement;
+        playerMap[player.identity] = player.playerId;
+
+        updatePlayerElementPosition(player);
     });
     
     conn.db.players.onDelete((ctx: EventContext, player: Player) => {
         console.log('Removed player:', player);
         const playerElement = playerElements[player.playerId];
         if (playerElement) {
-            playersDiv.removeChild(playerElement);
-            delete playerElements[player.playerId];
+            removePlayer(player.playerId);
+            //gameContainer.removeChild(playerElement);
+            //delete playerElements[player.playerId];
         }
     });
 
     conn.db.players.onUpdate((ctx: EventContext, old_player: Player, new_player: Player) => {
         console.log('Updated player:', new_player);
         const playerElement = playerElements[new_player.playerId];
+        playerMap[new_player.identity] = new_player.playerId;
         if (playerElement) {
-            playerElement.textContent = new_player.identity;
+            updatePlayerElementPosition(new_player);
         }
     })
 }
@@ -135,11 +148,12 @@ setUsernameButton.onclick = () => {
     console.log('Username set to:', username);
     const v: Vector3 = {x: 0, y: 0, z: 0};
     conn?.reducers.upsertPlayer(username, "", v, v);
+    isOnline = true;
 };
 
 // Event listener for sending messages
 sendMessageButton.onclick = () => {
-    if (conn && username) {
+    if (conn && username && isOnline) {
         conn.reducers.addChatMessage(username, messageInput.value);
         messageInput.value = ''; // Clear input after sending
     }
@@ -151,7 +165,40 @@ disconnectionButton.onclick = () => {
     // remove player
     console.log('Removing player:', username);
     conn?.reducers.removePlayer(username);
+    isOnline = false;
 };
+
+// Event listener for mouse move events
+document.addEventListener('mousemove', (event: MouseEvent) => {
+    // get mouse position relative to game container
+    //const x = event.clientX - gameContainer.offsetLeft;
+    //const y = event.clientY - gameContainer.offsetTop;
+    const mouse_offset = 3;
+    const x = event.clientX - mouse_offset;
+    const y = event.clientY - mouse_offset;
+
+    // update player's position based on mouse position
+    if (conn && username && isOnline) {
+        const v: Vector3 = {x: x, y: y, z: 0};
+        const r: Vector3 = {x: 0, y: 0, z: 0};
+        conn.reducers.upsertPlayer(username, "", v, r);
+    }
+});
+
+// Update the player element's position based on the player's position
+function updatePlayerElementPosition(player: Player) {
+    const playerElement = playerElements[player.playerId];
+    if (playerElement) {
+        playerElement.style.left = `${player.position.x}px`;
+        playerElement.style.top = `${player.position.y}px`;
+    }
+}
+
+function removePlayer(playerId: number) {
+    const playerElement = playerElements[playerId];
+    gameContainer.removeChild(playerElement);
+    delete playerElements[playerId];
+}
 
 // Initialize the connection when the script loads
 connectToSpacetimeDB();
