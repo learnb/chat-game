@@ -64,6 +64,7 @@ public static partial class Module
         Player existingPlayer = FindPlayerByIdentity(ctx, identity);
         if (existingPlayer.PlayerId != 0)
         {
+            Log.Info($"Removing playerId: {existingPlayer.PlayerId}");
             ctx.Db.Players.PlayerId.Delete(existingPlayer.PlayerId);
         }
     }
@@ -91,6 +92,7 @@ public static partial class Module
             }
         }
 
+        Log.Info($"Player not found for identity: {identity}");
         return new Player { PlayerId = 0 };
     }
 
