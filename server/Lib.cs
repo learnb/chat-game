@@ -109,6 +109,7 @@ public static partial class Module
         Log.Info($"Client disconnected: {ctx.Sender}");
         // potentially remove player from db
         //RemovePlayer(ctx, ctx.Sender.ToString());
+        RemovePlayer(ctx, ctx.Sender.ToString());
     }
 
 }
