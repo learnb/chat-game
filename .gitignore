@@ -1,5 +1,6 @@
 bin
 obj
 
-tsclient/node_modules/*
-tsclient/src/module_bindings/*
+/client/tsclient/node_modules/*
+/client/tsclient/src/module_bindings/*
+/client/tsclient/dist
