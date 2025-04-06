@@ -1,3 +1,11 @@
+## Publish spacetime server module
+
+From project root dir:
+```bash
+spacetime publish --project-path server chat-game-dev
+```
+
+
 ## Build Client Module Bindings
 
 run from `server` dir:
