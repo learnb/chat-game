@@ -155,6 +155,7 @@ setUsernameButton.onclick = () => {
     const v: Vector3 = {x: 0, y: 0, z: 0};
     conn?.reducers.upsertPlayer(username, "", v, v);
     isOnline = true;
+    gameContainer.style.cursor = 'none';
 };
 
 // Event listener for sending messages
@@ -172,6 +173,7 @@ disconnectionButton.onclick = () => {
     console.log('Removing player:', username);
     conn?.reducers.removePlayer(username);
     isOnline = false;
+    gameContainer.style.cursor = 'auto';
 };
 
 // Event listener for mouse move events
