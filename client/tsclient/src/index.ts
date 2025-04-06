@@ -65,7 +65,7 @@ function subscribeToMessages() {
     conn.db.chatMessages.onInsert((ctx: EventContext, message: ChatMessage) => {
         console.log('New message:', message);
         const messageElement = document.createElement('div');
-        messageElement.textContent = `[${message.timestamp}] ${message.senderId}: ${message.message}`;
+        messageElement.textContent = `[${message.timestamp.toDate()}] ${message.senderId}: ${message.message}`;
         messagesDiv.appendChild(messageElement);
     });
 }
