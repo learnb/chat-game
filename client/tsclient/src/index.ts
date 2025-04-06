@@ -139,9 +139,8 @@ function subscribeToPlayers() {
     });
 
     conn.db.players.onUpdate((ctx: EventContext, old_player: Player, new_player: Player) => {
-        console.log('Updated player:', new_player);
+        //console.log('Updated player:', new_player);
         const playerElement = playerElements[new_player.playerId];
-        playerMap[new_player.identity] = new_player.playerId;
         if (playerElement) {
             updatePlayerElementPosition(new_player);
         }
