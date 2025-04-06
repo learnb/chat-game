@@ -16,6 +16,7 @@ const sendMessageButton = document.getElementById('sendMessage') as HTMLButtonEl
 const disconnectionButton = document.getElementById('disconnect') as HTMLButtonElement;
 
 let playerElements: { [playerId: number]: HTMLDivElement } = {};
+let playerTagList: { [playerId: number]: HTMLDivElement } = {};
 let playerMap: { [username: string]: number} = {};
 
 let isOnline: boolean = false;
@@ -112,12 +113,19 @@ function subscribeToPlayers() {
         playerElement.style.position = 'absolute';
         playerElement.style.width = '10px';
         playerElement.style.height = '10px';
-        playerElement.style.backgroundColor = 'red';
+        //playerElement.style.backgroundColor = 'red';
+        // random color
+        playerElement.style.backgroundColor = `rgb(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)})`;
         playerElement.style.pointerEvents = 'none';
         playerElement.textContent = player.identity;
         gameContainer.appendChild(playerElement);
         playerElements[player.playerId] = playerElement;
         playerMap[player.identity] = player.playerId;
+
+        let playerTag = document.createElement('div');
+        playerTag.textContent = player.identity;
+        playersDiv.appendChild(playerTag);
+        playerTagList[player.playerId] = playerTag;
 
         updatePlayerElementPosition(player);
     });
@@ -127,8 +135,6 @@ function subscribeToPlayers() {
         const playerElement = playerElements[player.playerId];
         if (playerElement) {
             removePlayer(player.playerId);
-            //gameContainer.removeChild(playerElement);
-            //delete playerElements[player.playerId];
         }
     });
 
@@ -208,7 +214,10 @@ function updatePlayerElementPosition(player: Player) {
 function removePlayer(playerId: number) {
     const playerElement = playerElements[playerId];
     gameContainer.removeChild(playerElement);
+    const playerTag = playerTagList[playerId];
+    playersDiv.removeChild(playerTag);
     delete playerElements[playerId];
+    delete playerTagList[playerId];
 }
 
 // Initialize the connection when the script loads
