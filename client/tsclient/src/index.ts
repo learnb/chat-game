@@ -170,18 +170,29 @@ disconnectionButton.onclick = () => {
 
 // Event listener for mouse move events
 document.addEventListener('mousemove', (event: MouseEvent) => {
-    // get mouse position relative to game container
-    //const x = event.clientX - gameContainer.offsetLeft;
-    //const y = event.clientY - gameContainer.offsetTop;
-    const mouse_offset = 3;
-    const x = event.clientX - mouse_offset;
-    const y = event.clientY - mouse_offset;
+    const x = event.clientX;
+    const y = event.clientY;
 
     // update player's position based on mouse position
     if (conn && username && isOnline) {
         const v: Vector3 = {x: x, y: y, z: 0};
         const r: Vector3 = {x: 0, y: 0, z: 0};
         conn.reducers.upsertPlayer(username, "", v, r);
+    }
+});
+
+// Add event listener to capture touch move events
+gameContainer.addEventListener('touchmove', (event: TouchEvent) => {
+    // Get the touch position relative to the container
+    const touch = event.touches[0];
+    const x = touch.clientX;
+    const y = touch.clientY;
+
+    // Update the player's position based on the touch position
+    if (conn && username) {
+        const v: Vector3 = { x, y, z: 0 };
+        const r: Vector3 = {x: 0, y: 0, z: 0};
+        conn?.reducers.upsertPlayer(username, "", v, r);
     }
 });
 
