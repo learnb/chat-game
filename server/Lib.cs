@@ -30,6 +30,21 @@ public static partial class Module
         public Timestamp Timestamp; // Time the message was sent
     }
 
+    // Reducer: update existing player
+    [Reducer]
+    public static void UpdatePlayer(ReducerContext ctx, string identity, string avatarConfig, Vector3 position, Vector3 rotation)
+    {
+        Player existingPlayer = FindPlayerByIdentity(ctx, identity);
+        if (existingPlayer.PlayerId != 0)
+        {
+            // update existing player
+            existingPlayer.AvatarConfig = avatarConfig;
+            existingPlayer.Position = position;
+            existingPlayer.Rotation = rotation;
+            ctx.Db.Players.PlayerId.Update(existingPlayer);
+        }
+    }
+
     // Reducer: add or update player
     [Reducer]
     public static void UpsertPlayer(ReducerContext ctx, string identity, string avatarConfig, Vector3 position, Vector3 rotation)
