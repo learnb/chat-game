@@ -108,10 +108,10 @@ public static partial class Module
     [Reducer(ReducerKind.ClientDisconnected)]
     public static void ClientDisconnected(ReducerContext ctx)
     {
-        Log.Info($"Client disconnected: {ctx.Sender}");
+        Log.Info($"Client disconnected:\n\tSender:{ctx.Sender}\n\tIdentity:{ctx.Identity}\n\t");
         // potentially remove player from db
         //RemovePlayer(ctx, ctx.Sender.ToString());
-        RemovePlayer(ctx, ctx.Sender.ToString());
+        //RemovePlayer(ctx, ctx.Identity.ToString());
     }
 
 }

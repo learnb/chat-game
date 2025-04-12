@@ -5,70 +5,110 @@ let currentIdentity = null;
 let currentToken = null;
 let websocket = null;
 
-//function subscribeToChatMessages() {
-//    // Generate random key for WebSocket connection
-//    const key = btoa(Math.random().toString());
-//
-//    // Create WebSocket URL
-//    //const socket = new WebSocket(`wss://spacetime.bryanlearn.com/v1/database/chat-game-dev/subscribe`, "v1.bsatn.spacetimedb");
-//    const socket = new WebSocket(`wss://spacetime.bryanlearn.com/v1/database/chat-game-dev/subscribe`, "v1.json.spacetimedb");
-//
-//    // Handle connection open
-//    socket.onopen = () => {
-//        console.log("WebSocket connection established");
-//
-//        // subscribe to chat messages
-//        const subscribeMessage = {
-//            subscribe: {
-//                query: [ "SELECT * FROM ChatMessages" ]
-//            }
-//        };
-//
-//        socket.send(JSON.stringify(subscribeMessage));
-//        console.log("Sent subscribe message:", JSON.stringify(subscribeMessage));
-//    };
-//
-//    // Handle incoming messages
-//    socket.onmessage = (event) => {
-//        console.log('Message from server:', event.data);
-//        
-//        const data = JSON.parse(event.data);
-//
-//        // Store the identity and token
-//        if (data.IdentityToken) {
-//            currentIdentity = data.IdentityToken.identity;
-//            currentToken = data.IdentityToken.token;
-//            console.log("New Identity token received:", currentToken);
-//            console.log("Identity:", currentIdentity);
-//
-//        } else if (data.SubscribeApplied) {
-//            // when subscription is confirmed
-//            const initialRows = data.SubscribeApplied.rows.table_rows;
-//            initialRows.forEach(row => {
-//                displayChatMessage(row);
-//            })
-//        } else if (data.TransactionUpdate) {
-//           // process updates 
-//           const updatedRows = data.TransactionUpdate.update.inserts;
-//           updatedRows.forEach(row => {
-//               displayChatMessage(row);
-//           });
-//        }
-//
-//    }
-//
-//    // Handle errors
-//    socket.onerror = (error) => {
-//        console.error("WebSocket error:", error);
-//    };
-//
-//    // Handle connection close
-//    socket.onclose = () => {
-//        console.log("WebSocket connection closed");
-//    };
-//
-//    websocket = socket; // Store websocket reference
-//}
+function subscribeToChatMessages() {
+    // Generate random key for WebSocket connection
+    const key = btoa(Math.random().toString());
+
+    // Create WebSocket URL
+    //const socket = new WebSocket(`wss://spacetime.bryanlearn.com/v1/database/chat-game-dev/subscribe`, "v1.bsatn.spacetimedb");
+    const socket = new WebSocket(`wss://spacetime.bryanlearn.com/v1/database/chat-game-dev/subscribe`, "v1.json.spacetimedb");
+
+    // Handle connection open
+    socket.onopen = () => {
+        console.log("WebSocket connection established");
+
+        // random uint for request id
+        //const rid = Math.floor(Math.random() * 100000);
+        // subscribe to chat messages
+        //const subscribeMessage = {
+        //    Subscribe: {
+        //        query_strings: [ "SELECT * FROM ChatMessages" ],
+        //        request_id: rid
+        //    }
+        //};
+
+        //socket.send(JSON.stringify(subscribeMessage));
+        //console.log("Sent subscribe message:", JSON.stringify(subscribeMessage));
+    };
+
+    // Handle incoming messages
+    socket.onmessage = (event) => {
+        console.log('Message from server:', event.data);
+        
+        const data = JSON.parse(event.data);
+
+        // Store the identity and token
+        if (data.IdentityToken) {
+            currentIdentity = data.IdentityToken.identity;
+            currentToken = data.IdentityToken.token;
+            console.log("New Identity token received:", currentToken);
+            console.log("Identity:", currentIdentity);
+
+            // random uint for request id
+            const rid = 420;
+            // send subscribe message
+            const subscribeMessage = {
+                Subscribe: {
+                    query_strings: [ "SELECT * FROM ChatMessages" ],
+                    request_id: rid
+                }
+            };
+
+            socket.send(JSON.stringify(subscribeMessage));
+            console.log("Sent subscribe message:", JSON.stringify(subscribeMessage));
+
+        } else if (data.InitialSubscription) {
+            // when subscription is confirmed
+            const updates = data.InitialSubscription.database_update.tables[0].updates;
+            updates.forEach(update => {
+                const inserts = update.inserts;
+                inserts.forEach(insert => {
+                    const row = JSON.parse(insert);
+                    displayChatMessage(row);
+                });
+            })
+        } else if (data.SubscribeApplied) {
+            // when subscription updaste
+            const updates = data.SubscribeApplied.database_update.tables[0].updates;
+            updates.forEach(update => {
+                const inserts = update.inserts;
+                inserts.forEach(insert => {
+                    const row = JSON.parse(insert);
+                    displayChatMessage(row);
+                });
+            })
+        } else if (data.TransactionUpdate) {
+           // process updates 
+           const updates = data.TransactionUpdate.status.Committed.tables[0].updates;
+           updates.forEach(update => {
+                const inserts = update.inserts;
+                inserts.forEach(insert => {
+                    const messageArray = JSON.parse(insert);
+                    const row = {
+                        MessageId: messageArray[0],
+                        SenderId: messageArray[1],
+                        Message: messageArray[2],
+                        Timestamp: messageArray[3]
+                    };
+                    displayChatMessage(row);
+                });
+           })
+        }
+
+    }
+
+    // Handle errors
+    socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+    };
+
+    // Handle connection close
+    socket.onclose = () => {
+        console.log("WebSocket connection closed");
+    };
+
+    websocket = socket; // Store websocket reference
+}
 
 function displayChatMessage(row) {
     const chatDiv = document.getElementById("chatMessages");
@@ -91,8 +131,8 @@ document.getElementById("joinButton").onclick = async () => {
 
         console.log("Joined as:", currentIdentity);
         //alert(`Welcome, ${username}! You are now connected.`);
-        //subscribeToChatMessages();
-        fetchChatMessages();
+        subscribeToChatMessages();
+        //fetchChatMessages();
     } else {
         console.error("Failed to generate identity:", response.statusText);
         //alert("Failed to join.");

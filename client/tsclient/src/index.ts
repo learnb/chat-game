@@ -182,7 +182,7 @@ document.addEventListener('mousemove', (event: MouseEvent) => {
 
     // update player's position based on mouse position
     if (conn && username && isOnline) {
-        const v: Vector3 = {x: x, y: y, z: 0};
+        const v: Vector3 = {x: x, y: 0, z: y};
         const r: Vector3 = {x: 0, y: 0, z: 0};
         conn.reducers.upsertPlayer(username, "", v, r);
     }
@@ -197,7 +197,7 @@ gameContainer.addEventListener('touchmove', (event: TouchEvent) => {
 
     // Update the player's position based on the touch position
     if (conn && username) {
-        const v: Vector3 = { x, y, z: 0 };
+        const v: Vector3 = {x: x, y: 0, z: y};
         const r: Vector3 = {x: 0, y: 0, z: 0};
         conn?.reducers.upsertPlayer(username, "", v, r);
     }

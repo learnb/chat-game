@@ -14,10 +14,11 @@ spacetime generate --lang typescript --out-dir ../client/tsclient/src/module_bin
 ```
 
 
-## Build
+## Build ts client
 
 ```bash
 npm run build
+npm run publish
 ```
 
 (older)
