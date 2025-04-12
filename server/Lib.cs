@@ -18,6 +18,18 @@ public static partial class Module
         public bool IsOnline;       // Player online status
     }
 
+    // entities table
+    [Table(Name = "Entities", Public = true)]
+    public partial struct Entity
+    {
+        [PrimaryKey]
+        [AutoInc]
+        public uint EntityId;       // Unique ID for the entity
+        public string Type;          // Type of the entity
+        public Vector3 Position;    // Entity position
+        public Vector3 Rotation;    // Entity rotation
+    }
+
     // chatMessages table
     [Table(Name = "ChatMessages", Public = true)]
     public partial struct ChatMessage
@@ -84,6 +96,32 @@ public static partial class Module
         }
     }
 
+    // Reducer: insert entity
+    [Reducer]
+    public static void InsertEntity(ReducerContext ctx, string type, Vector3 position, Vector3 rotation)
+    {
+        var newEntity = ctx.Db.Entities.Insert(new Entity
+        {
+            Type = type,
+            Position = position,
+            Rotation = rotation
+        });
+    }
+
+    // Reducer: update entity
+    [Reducer]
+    public static void UpdateEntity(ReducerContext ctx, uint entityId, Vector3 position, Vector3 rotation)
+    {
+        Entity existingEntity = FindEntityById(ctx, entityId);
+        if (existingEntity.EntityId != 0)
+        {
+            // update existing entity
+            existingEntity.Position = position;
+            existingEntity.Rotation = rotation;
+            ctx.Db.Entities.EntityId.Update(existingEntity);
+        }
+    }
+
     // Reducer: add chat message
     [Reducer]
     public static void AddChatMessage(ReducerContext ctx, string senderId, string message)
@@ -109,6 +147,21 @@ public static partial class Module
 
         Log.Info($"Player not found for identity: {identity}");
         return new Player { PlayerId = 0 };
+    }
+
+    // helper method to find entity by entity_id
+    public static Entity FindEntityById(ReducerContext ctx, uint entityId)
+    {
+        foreach (var entity in ctx.Db.Entities.Iter())
+        {
+            if (entity.EntityId == entityId)
+            {
+                return entity;
+            }
+        }
+
+        Log.Info($"Entity not found for entityId: {entityId}");
+        return new Entity { EntityId = 0 };
     }
 
     // Lifecycle reducer called when a client connects
